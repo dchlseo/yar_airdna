@@ -1,12 +1,15 @@
 import boto3
 from datetime import datetime
+import gzip
 import json
+import logging
 import os
+import shutil
 
 
 def load_config():
     """config 파일 읽기"""
-    with open('../config.json', 'r') as file:
+    with open('config.json', 'r') as file:
         config = json.load(file)
     return config
 
@@ -40,32 +43,42 @@ def init_s3_client(aws_access_key_id, aws_secret_access_key):
     return s3_client
 
 
+# Configure logging
+logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
+
 def airdna_data_download(s3, base_prefix, bucket_name, ml):
     """Set local directory and download data"""
     prefix = base_prefix + ml
-    response = s3.list_objects_v2(Bucket = bucket_name, Prefix = prefix)
+    try:
+        response = s3.list_objects_v2(Bucket=bucket_name, Prefix=prefix)
+    except Exception as e:
+        logging.error(f"Failed to list objects: {e}")
+        return
     
     if 'Contents' in response:
-        directory_path = '../data/' + ml
-        if not os.path.exists(directory_path):
-            os.makedirs(directory_path)
-            print(f"Directory '{directory_path}' created.")
-        else:
-            print(f"Directory '{directory_path}' already exists.")
+        directory_path = 'data/' + ml
+        os.makedirs(directory_path, exist_ok=True)
+        logging.info(f"Directory set up at '{directory_path}'")
         
-        files = []
-        for obj in response['Contents']:
-            files.append(obj['Key'])
-        print(files)
-        for i in range(1, len(files)):   # data files (.csv)
-            object_key = files[i]
-            local_file_path = directory_path + '/' + object_key.split('/')[3]
-            print(f'DOWNLOADING FILE: {object_key}...')
-
-            # download data
-            s3.download_file(bucket_name, object_key, local_file_path)
-            
-            print('DOWNLOAD COMPLETE.')
-
+        files = [obj['Key'] for obj in response['Contents'] if obj['Key'] != prefix]
+        for object_key in files:
+            local_file_path = os.path.join(directory_path, object_key.split('/')[-1])
+            try:
+                # MODIFY HERE TO DOWNLOAD ONLY CSV
+                logging.info(f'DOWNLOADING FILE: {object_key}...')
+                logging.info(f'SAVE DIRECTORY: {local_file_path}')
+                s3.download_file(bucket_name, object_key, local_file_path)
+                logging.info('DOWNLOAD COMPLETE.')
+                
+                if local_file_path.endswith('.gz'):
+                    uncompressed_file_path = local_file_path[:-3]
+                    with gzip.open(local_file_path, 'rb') as f_in:
+                        with open(uncompressed_file_path, 'wb') as f_out:
+                            shutil.copyfileobj(f_in, f_out)
+                    logging.info(f'File decompressed: {uncompressed_file_path}')
+                    os.remove(local_file_path)
+                    logging.info(f'Removed compressed file: {local_file_path}')
+            except Exception as e:
+                logging.error(f"Error handling file {object_key}: {e}")
     else:
-        print("No objects found in the specified bucket and prefix.")
+        logging.warning("No objects found in the specified bucket and prefix.")
