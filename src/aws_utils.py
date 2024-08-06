@@ -7,9 +7,9 @@ import os
 import shutil
 
 
-def load_config():
+def load_config(config_dir):
     """config 파일 읽기"""
-    with open('config.json', 'r') as file:
+    with open(config_dir, 'r') as file:
         config = json.load(file)
     return config
 
