@@ -18,8 +18,24 @@
     - "DATA_DIRECTORY": 데이터 저장할 로컬 디렉토리(예: 'data/'),
     - "P_YM": 다운로드할 데이터 연월(예: '2024-06-01'),
     - "YQ": 분석할 데이터 연/분기(예: '2024q2'),
-    - "EXTENSION": 데이터 저장 포맷('.xlsx'),
-    - "CODEC": 데이터 인코딩 포맷 ('cp949')
+    - "EXTENSION": 테이블 저장 포맷('.xlsx'),
+    - "CODEC": 테이블 인코딩 포맷 ('cp949')
+
+- config.json 파일 샘플 (민감정보 포함되어 업로드되지 않음. 아래 포맷으로 config.json 파일 생성하여 활용 가능)
+```json
+{
+    "AWS_ACCESS_KEY_ID": "YOUR_AWS_ACCESS_KEY_ID_HERE", // AWS 아이디
+    "AWS_SECRET_ACCESS_KEY": "YOUR_AWS_SECRET_ACCESS_KEY_HERE", // AWS 비밀번호
+    "BUCKET_NAME":"airdna-prod-data-integration",   // 변경 X
+    "BASE_PREFIX": "yanolja/outbound/", // 변경 X
+    "DATA_DIRECTORY": "data/",   // 로컬 환경에 맞게 디렉토리 변경
+    "P_YM": "2024-06-01",   // 다운로드할 데이터 연월 ('일'은 1로 고정)
+    "YQ": "2024q2",  // e.g., 분석할 데이터 연/분기
+    "EXTENSION": "xlsx",  // 테이블 저장 포맷
+    "CODEC": "cp949"  // 테이블 인코딩 포맷
+}
+```
+
 
 개발 환경
 - Python 3.11
