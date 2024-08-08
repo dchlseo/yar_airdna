@@ -18,6 +18,8 @@ def main():
     data_dir = config['DATA_DIRECTORY']
     p_ym = config['P_YM']
     yq = config['YQ']
+    file_format = config['EXTENSION']
+    codec = config["CODEC"]
 
     output_date = aws.convert_date_format(p_ym)
     bucket_dir = base_prefix + output_date
@@ -33,6 +35,7 @@ def main():
     print(f"DATA_DIRECTORY: {full_path}")
     print(f"P_YM: {p_ym}")
     print(f"QUARTER: {yq}")
+    print(f"SAVE_FORMAT: {file_format}")
 
     print('---------------------------------------------------------------')
 
@@ -87,13 +90,14 @@ def main():
     full_table = ans.analyze_abnb(df_performance, periods)
 
     # 데이터 저장
-    filename = 'abnb_' + yq + '.csv'
-    filepath = os.path.join(full_path, filename)
-    ans.save_data(full_table, filepath)
+    filename = 'abnb_' + yq
+    filepath = os.path.join(full_path, filename + '.' + file_format)
+    ans.save_data(full_table, filepath, file_format=file_format)
 
     end_time = datetime.now()
     print("END TIME:", end_time.time())
     print(f'RUNTIME: {end_time - start_time}')
+
 
 if __name__ == '__main__':
     main()

@@ -1,4 +1,5 @@
 from datetime import datetime
+from openpyxl import Workbook
 import os
 import pandas as pd
 import sys
@@ -202,7 +203,7 @@ def concatenate_and_refine_data(quarterly_df, full_df, is_occ=False):
 
     if not is_occ: 
         # adr, revpar
-        refined_df.iloc[:, 1:] = refined_df.iloc[:, 1:].astype(float).round(0).astype(int)
+        refined_df.iloc[:, 1:] = refined_df.iloc[:, 1:].astype(float).round(0)
     elif is_occ:
         # occ
         refined_df.iloc[:, 1:] = refined_df.iloc[:, 1:].astype(float) * 100
@@ -222,7 +223,7 @@ def finalize_report_tables(final_adr_df, final_occ_df, final_revpar_df):
 
     # 테이블값 string으로 변환 
 
-    combined_df = combined_df.astype('str')
+    combined_df[['Index', '시점']] = combined_df[['Index', '시점']].astype('str')
 
     return combined_df
 
@@ -255,9 +256,14 @@ def analyze_abnb(data, periods):
     return report_table
 
 
-def save_data(df, filepath, codec='cp949'):
-
-    df.to_csv(filepath, encoding=codec)
-    print(f'ENCODING: {codec}')
+def save_data(df, filepath, file_format='csv', codec='cp949'):
+    if file_format == 'csv':
+        df.to_csv(filepath, encoding=codec)
+        print(f'ENCODING: {codec}')
+    elif file_format == 'xlsx':
+        df.to_excel(filepath, index=False)
+    else:
+        raise ValueError("Unsupported file format. Please use 'csv' or 'xlsx'")
+    
     print(f'DATA SAVED: {filepath}')
     
