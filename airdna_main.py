@@ -5,10 +5,24 @@ from datetime import datetime
 from src import aws_utils as aws
 from src import analysis as ans
 
+"""
+중요: 프로그램 실행 전 config.json 파일 확인 후 파라미터 값 제대로 세팅되어 있는지 확인!
+    "AWS_ACCESS_KEY_ID": AWS id 값,
+    "AWS_SECRET_ACCESS_KEY": AWS 비밀번호,
+    "BUCKET_NAME": AWS 저장소,
+    "BASE_PREFIX": 다운로드할 데이터 디렉토리,
+    "DATA_DIRECTORY": 저장할 데이터 디렉토리 (로컬),
+    "P_YM": 다운로드할 데이터 연월,
+    "YQ": 분석할 데이터 연/분기,
+    "EXTENSION": 데이터 저장 포맷(확장자명),
+    "CODEC": 데이터 인코딩
+
+"""
+
 
 def print_config(aws_access_key_id, aws_secret_access_key, bucket_name, full_path, p_ym, yq, file_format, codec):
-    """ Print configuration settings. """
-    masked_id, masked_key = aws.display_config(aws_access_key_id, aws_secret_access_key)
+    """ config 파일 출력 (민감 정보 마스킹)"""
+    masked_id, masked_key = aws.display_config(aws_access_key_id, aws_secret_access_key)   # aws id, key masking
     print('----------------------------CONFIG----------------------------')
     print(f"AWS_ACCESS_KEY_ID: {masked_id}")
     print(f"AWS_SECRET_ACCESS_KEY: {masked_key}")
@@ -22,7 +36,13 @@ def print_config(aws_access_key_id, aws_secret_access_key, bucket_name, full_pat
 
 
 def download_data(aws_access_key_id, aws_secret_access_key, base_prefix, bucket_name, output_date):
-    """ Download data from AWS S3. """
+    """ 
+    AWS S3에서 Airbnb 데이터 다운로드
+    참고: 
+        AirDNA에서 월초에 한번씩 데이터 업데이트. 
+        다운받고자 하는 월 데이터는 config의 'p_ym' 값으로 설정 (예: 2024년 6월 데이터는 p_ym = '2024-06-01')
+    """
+
     start_time = datetime.now()
     print("START TIME:", start_time.time())
     s3 = aws.init_s3_client(aws_access_key_id, aws_secret_access_key)
@@ -34,7 +54,7 @@ def download_data(aws_access_key_id, aws_secret_access_key, base_prefix, bucket_
 
 
 def perform_analysis(full_path, yq, file_format, codec):
-    """ Perform data analysis and save results. """
+    """ 로컬에 저장된 데이터 파일 불러와서 분석, 결과 테이블 저장. """
     start_time = datetime.now()
     monthly_file, property_file = ans.assign_file_names(full_path)
     # df_property = pd.read_csv(property_file, dtype={56: 'str'})
@@ -52,11 +72,16 @@ def perform_analysis(full_path, yq, file_format, codec):
 
 
 def main(operation='all'):
-    """ Main function to handle data processing based on operation mode.
+    """ 
+    실행 코드
     
     Args:
         operation (str): Operation mode ('all', 'download', or 'analysis').
+        'all': 1) AWS에서 데이터 다운로드 후, 2) 분석/결과저장
+        'download': 1) AWS에서 데이터 다운로드 후 프로그램 중지
+        'analysis': 2) 분석/결과저장 (로컬에 데이터 저장되어 있어야 함)
     """
+
     try:
         # Load configuration and set up
         config = aws.load_config('config.json')
