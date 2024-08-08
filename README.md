@@ -23,7 +23,5 @@
 개발 환경
 - Python 3.11
 - 패키지 설치
-
-
 ```python
     pip install -r requirements.txt
