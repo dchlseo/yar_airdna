@@ -2,8 +2,8 @@ import sys
 import os
 import pandas as pd
 from datetime import datetime
-from src import aws_utils as aws
-from src import analysis as ans
+from src import aws_utils as aws   # 다운로드 모듈
+from src import analysis as ans   # 분석 모듈
 
 """
 중요: 프로그램 실행 전 config.json 파일 확인 후 파라미터 값 제대로 세팅되어 있는지 확인!
