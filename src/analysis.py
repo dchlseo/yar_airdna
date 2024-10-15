@@ -198,7 +198,7 @@ def reset_index_and_rename(df):
 
 
 def concatenate_and_refine_data(quarterly_df, full_df, is_occ=False):
-    """OCC는 소수점 1째 자리까지 반올림, 다른 테이블은 정수로 반올림"""
+    """OCC는 소수점 2째 자리까지 반올림, 다른 테이블은 정수로 반올림"""
     refined_df = pd.concat([quarterly_df, full_df.iloc[3:]])
 
     if not is_occ: 
@@ -207,7 +207,7 @@ def concatenate_and_refine_data(quarterly_df, full_df, is_occ=False):
     elif is_occ:
         # occ
         refined_df.iloc[:, 1:] = refined_df.iloc[:, 1:].astype(float) * 100
-        refined_df.iloc[:, 1:] = refined_df.iloc[:, 1:].astype(float).round(1)    # NEED TO FIX: ROUNDING NOT WORKING
+        refined_df.iloc[:, 1:] = refined_df.iloc[:, 1:].astype(float).round(2)    
     
     return refined_df
 
