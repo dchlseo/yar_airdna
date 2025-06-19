@@ -41,13 +41,50 @@ def assign_file_names(directory_path):
     
     return monthly_file, property_file
 
+# OLD VER.
+# def generate_periods(yq):
+#     """분석에 포함할 년월 리스트를 반환"""
+#     year = int(yq[:4])
+#     quarter = int(yq[-1])
 
+#     # 분기
+#     quarter_to_months = {
+#         1: [1, 2, 3],
+#         2: [4, 5, 6],
+#         3: [7, 8, 9],
+#         4: [10, 11, 12]
+#     }
+
+#     # 작년 동기부터 포함
+#     start_month = quarter_to_months[quarter][0]
+#     start_date = datetime(year - 1, start_month, 1)
+
+#     periods = []
+    
+#     # 작년 동기부터 해당 분기까지 데이터 반환
+#     current_date = start_date
+#     end_month = quarter_to_months[quarter][-1]
+#     while True:
+#         #  "yyyy-mm-dd" 형태로 반환 (airdna 포맷과 일치)
+#         periods.append(current_date.strftime('%Y-%m-%d'))
+        
+#         if current_date.month == 12:
+#             current_date = datetime(current_date.year + 1, 1, 1)
+#         else:
+#             current_date = datetime(current_date.year, current_date.month + 1, 1)
+        
+#         if current_date.year == year and current_date.month > end_month:
+#             break
+    
+#     return periods
+
+# NEW VER.
 def generate_periods(yq):
-    """분석에 포함할 년월 리스트를 반환"""
+    """Returns a list of periods to analyze based on the given year and quarter."""
     year = int(yq[:4])
     quarter = int(yq[-1])
 
-    # 분기
+    # Map quarters to months
     quarter_to_months = {
         1: [1, 2, 3],
         2: [4, 5, 6],
@@ -55,28 +92,36 @@ def generate_periods(yq):
         4: [10, 11, 12]
     }
 
-    # 작년 동기부터 포함
+    # Start from the same quarter of the previous year
     start_month = quarter_to_months[quarter][0]
     start_date = datetime(year - 1, start_month, 1)
 
     periods = []
-    
-    # 작년 동기부터 해당 분기까지 데이터 반환
     current_date = start_date
     end_month = quarter_to_months[quarter][-1]
+
+    # Loop to generate periods
     while True:
-        #  "yyyy-mm-dd" 형태로 반환 (airdna 포맷과 일치)
+        # Append the current date as "yyyy-mm-dd"
         periods.append(current_date.strftime('%Y-%m-%d'))
-        
+
+        # Increment the current date by one month
         if current_date.month == 12:
             current_date = datetime(current_date.year + 1, 1, 1)
         else:
             current_date = datetime(current_date.year, current_date.month + 1, 1)
-        
-        if current_date.year == year and current_date.month > end_month:
+
+        # Break if the current date exceeds the target quarter
+        if (current_date.year > year or
+            (current_date.year == year and current_date.month > end_month)):
             break
-    
+
+        # Safeguard to prevent excessive looping
+        if current_date.year > 2100:
+            raise ValueError("Year exceeded 2100, likely due to a loop error.")
+
     return periods
+
 
 
 def abnb_performance(data=None, month=None):
